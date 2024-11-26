@@ -1,0 +1,288 @@
+﻿@page
+@model BrainStormEra.Views.Home.HomePageAdminModel
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var userId = HttpContextAccessor.HttpContext.Request.Cookies["user_id"];
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | BrainStormEra</title>
+    <meta name="description"
+        content="Welcome to BrainStormEra Admin Dashboard. Manage courses, users, achievements, and more efficiently.">
+    <meta name="keywords"
+        content="BrainStormEra, Admin Dashboard, Course Management, User Management, Achievements, Certificates, Chatbot">
+    <link rel="canonical" href="https://www.brainstormera.com/admin/dashboard">
+
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="Admin Dashboard | BrainStormEra">
+    <meta property="og:description"
+        content="Welcome to BrainStormEra Admin Dashboard. Manage courses, users, achievements, and more efficiently.">
+    <meta property="og:image" content="https://www.brainstormera.com/lib/img/Login/BrainStormEra_logo.png">
+    <meta property="og:url" content="https://www.brainstormera.com/admin/dashboard">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Admin Dashboard | BrainStormEra">
+    <meta name="twitter:description"
+        content="Welcome to BrainStormEra Admin Dashboard. Manage courses, users, achievements, and more efficiently.">
+    <meta name="twitter:image" content="https://www.brainstormera.com/lib/img/Login/BrainStormEra_logo.png">
+
+    <!-- CSS Links -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link rel="icon" href="~/lib/img/BrainStormEra_logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="~/css/HomePage/landing_page.css" rel="stylesheet" />
+    <link href="~/css/base.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/Admin/analysis.css">
+    <link href="~/css/Chatbot/chatbot.css" rel="stylesheet" />
+    <link href="~/css/HomePage/Admin/homePageAdmin.css" rel="stylesheet" />
+    <link href="~/css/Notification/notification-modal.css" rel="stylesheet" />
+</head>
+
+<body>
+    @await Html.PartialAsync("~/Views/Shared/Admin/Header/_Header.cshtml")
+
+    <div class="container mt-5">
+        <div class="text-center" style="margin-top: 150px; font-size: 2.5rem; color: cadetblue; font-weight: bold;">
+            <h2>REPORT AND ANALYZE</h2>
+        </div>
+
+        <div class="chart-section row">
+            <div class="chart-container col-md-6">
+                <canvas id="conversationChart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-container col-md-6">
+                <canvas id="userChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="chart-section row">
+            <div class="chart-container col-md-12">
+                <canvas id="courseCreationChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+
+    @await Html.PartialAsync("~/Views/Home/Notification/_NotificationsModal.cshtml")
+    @await Html.PartialAsync("~/Views/Home/Notification/addNotificationModal.cshtml")
+    @await Html.PartialAsync("~/Views/Home/Notification/editNotificationModal.cshtml")
+
+    <div class="dialog-overlay" id="dialogOverlay">
+        <div class="dialog">
+            <h3>Select Users</h3>
+            <div>
+                <input type="checkbox" id="selectAllUsers" /> Select All
+            </div>
+            <ul id="userList"></ul>
+            <button id="sendToUsers">Send</button>
+        </div>
+    </div>
+
+    @await Html.PartialAsync("~/Views/Shared/Chatbot/Chatbot.cshtml")
+    @await Html.PartialAsync("~/Views/Shared/Footer/_Footer.cshtml")
+
+    <!-- JavaScript Links -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/js/Notification/notification.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Conversation Chart Data
+            fetch('@Url.Action("GetConversationStatistics", "Chatbot")')
+                .then(response => response.json())
+                .then(data => {
+                    var conversationChart = document.getElementById('conversationChart');
+                    if (conversationChart) {
+                        var ctx = conversationChart.getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: data.map(item => new Date(item.date).toLocaleDateString()),
+                                datasets: [{
+                                    label: 'Chatbot Requests',
+                                    data: data.map(item => item.count),
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    tension: 0.1,
+                                    fill: false
+                                }]
+                            },
+                            options: { scales: { y: { beginAtZero: true } } }
+                        });
+                    } else {
+                        console.warn('Conversation chart element not found.');
+                    }
+                })
+                .catch(error => console.error('Error fetching conversation statistics:', error));
+
+            fetch('@Url.Action("GetCourseCreationStatistics", "HomePageAdmin")')
+                .then(response => response.json())
+                .then(result => {
+                    if (!result.success) {
+                        throw new Error(result.message || 'Failed to fetch course data');
+                    }
+
+                    const data = result.data;
+                    console.log("Data received from API:", data); // Log full data to inspect structure
+
+                    var courseChart = document.getElementById('courseCreationChart');
+                    if (!courseChart) {
+                        throw new Error('Course chart element not found');
+                    }
+
+                    var ctx = courseChart.getContext('2d');
+
+                    // Destroy existing chart if it exists
+                    var existingChart = Chart.getChart(ctx);
+                    if (existingChart) {
+                        existingChart.destroy();
+                    }
+
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(item => {
+                                console.log("Raw Date:", item.Date || item.date); // Log raw date to debug
+                                const parsedDate = new Date((item.Date || item.date) + 'T00:00:00'); // Using both field names
+                                console.log("Parsed Date:", parsedDate);
+                                return parsedDate.toLocaleDateString('en-GB', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric'
+                                });
+                            }),
+                            datasets: [{
+                                label: 'Courses Created',
+                                data: data.map(item => Number(item.Count || item.count)),
+                                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: `Course Creation Statistics (Total: ${result.totalCourses})`
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        title: function (tooltipItems) {
+                                            const date = new Date((data[tooltipItems[0].dataIndex].Date || data[tooltipItems[0].dataIndex].date) + 'T00:00:00');
+                                            return date.toLocaleDateString('en-US', {
+                                                weekday: 'long',
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            });
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1,
+                                        precision: 0
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 45
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    var courseChart = document.getElementById('courseCreationChart');
+                    if (courseChart) {
+                        courseChart.parentElement.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h4>Error Loading Chart</h4>
+                        <p>${error.message}</p>
+                        <button class="btn btn-primary mt-2" onclick="location.reload()">
+                            Retry
+                        </button>
+                    </div>
+                `;
+                    }
+                });
+
+
+
+            // User Chart Data
+            fetch('@Url.Action("GetUserStatistics", "HomePageAdmin")')
+                .then(response => response.json())
+                .then(data => {
+                    var userChart = document.getElementById('userChart');
+                    if (userChart) {
+                        var ctx = userChart.getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: data.map(item => new Date(item.date).toLocaleDateString()),
+                                datasets: [{
+                                    label: 'New Users',
+                                    data: data.map(item => item.count),
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    tension: 0.1,
+                                    fill: false
+                                }]
+                            },
+                            options: { scales: { y: { beginAtZero: true, ticks: { stepSize: 1, callback: value => Number.isInteger(value) ? value : '' } } } }
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching user statistics:', error));
+
+
+            // Notifications Modal
+            $('#notificationsModal').on('shown.bs.modal', function () {
+                $.get('@Url.Action("Notifications", "Notification")', function (data) {
+                    $('#notificationsModal .modal-body').html($(data).find('.modal-body').html());
+                    var currentUser = '@userId';
+                    $('#selectAll').on('change', function () {
+                        if (this.checked) {
+                            $('.notification-item').each(function () {
+                                var createdBy = $(this).data('createdby');
+                                if (createdBy === currentUser) $(this).find('.select-notification').show().prop('checked', true);
+                            });
+                            $('#deleteSelected').show();
+                        } else {
+                            $('.select-notification').hide().prop('checked', false);
+                            $('#deleteSelected').hide();
+                        }
+                    });
+                });
+            });
+
+            $(document).on('click', '.add-notification', function () {
+                $('#notificationsModal').modal('hide');
+                $('#addNotificationModal').modal('show');
+            });
+
+            window.confirmLogout = function () {
+                if (confirm("Are you sure you want to logout?")) {
+                    window.location.href = '@Url.Action("Logout", "Login")';
+                }
+            };
+        });
+    </script>
+</body>
+
+</html>

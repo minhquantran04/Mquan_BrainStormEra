@@ -1,0 +1,105 @@
+:root {
+    /* Primary and Secondary Colors */
+    --primary-color: #183A9E;
+    --secondary-primary-color: #4682B4;
+    --secondary-color: #99b3c9;
+    --main-color: #4682b4;
+    --blue-color-primary: #223786;
+    /* Backgrounds and Shadows */
+    --white-color: #fff;
+    --black-color: #181818;
+    --background-light: #f8f9fa;
+    --light-blue: #F1F5FD;
+    --light-blue-color: #EDF1F8;
+    --very-light-gray: #e0e0e0;
+    --light-gray-color: #dee2e6;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --box-shadow-color: rgba(0, 0, 0, 0.2);
+    --modal-bg-color: rgba(0, 0, 0, 0.5);
+    /* Text Colors */
+    --text-color: #323232;
+    --text-muted: #6c757d;
+    --text-light-color: #888;
+    --text-color-light: #fff;
+    --text-color-dark: #181818;
+    --border-color: #6c757d;
+    /* Button Colors */
+    --button-blue: #007bff;
+    --button-gray: #434548;
+    --cancel-color: #b0b0b0;
+    --cancel-hover-color: #9c9c9c;
+    --btn-create: #28a745;
+    --btn-create-hover: #8be59e;
+    --delete-btn-bg-color: #ff0000;
+    --delete-btn-hover-bg-color: #b30000;
+    --create-btn-bg-color: #28a745;
+    --create-btn-hover-bg-color: #64e17f;
+    --cancel-btn-color: #6c757d;
+    /* Link and Hover Colors */
+    --link-color: #007bff;
+    --blue-hover-color: #0056b3;
+    --hover-color-primary: #4682b4;
+    --linkedin-btn-bg-color: #4682b4;
+    --linkedin-btn-hover-bg-color: #005582;
+    /* Special Colors */
+    --green-color: #4BAE4F;
+    --red-color: #FF0000;
+    --orange: #ff6347;
+    --yellow-color: #FFD700;
+    --star-color: #f4b400;
+    --star-default-color: #cccccc;
+    /* Other Colors */
+    --header-color: #d0d0d0;
+    --gray-color-main: #737373;
+    --upload-area-border-color: #007bff;
+    --button-bg-color: #ffffff;
+}
+
+@font-face {
+    font-family: 'FiraCodeNF'; /* Replace with the name of your chosen Nerd Font */
+    src: url('fonts/FiraCode-Regular-Nerd-Font.ttf') format('truetype'); /* Adjust the file path */
+    font-weight: normal;
+    font-style: normal;
+}
+
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: inherit;
+}
+
+html {
+    /* 16px ~ 100% */
+    /* 
+        đưa về =62.5% tương đương với 1 rem = 10px 
+        nếu muốn đưa về 12px thì chỉ cần ghi 1.2px 
+        */
+    font-size: 62.5%;
+    height : 100%;
+    line-height: 1.4rem;
+    font-family: 'Calibri', 'Roboto', sans-serif, Helvetica;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+.container-fluid{
+    width : 100%;
+}
+
+/* Target the main container of the page content */
+.container {
+    flex: 1; /* This will allow the container to expand and push the footer down */
+}
+
+/* Footer styling remains the same */
+footer {
+    background-color: var(--button-color);
+    color: var(--white-color);
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    position: relative;
+}

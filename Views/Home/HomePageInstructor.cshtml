@@ -1,0 +1,164 @@
+﻿@model BrainStormEra.Views.Home.HomePageInstructorViewModel
+
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var userId = HttpContextAccessor.HttpContext.Request.Cookies["user_id"];
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link rel="icon" href="~/lib/img/BrainStormEra_logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/HomePage/landing_page.css">
+    <link href="~/css/base.css" rel="stylesheet" />
+    <link href="~/css/HomePage/homePage.css" rel="stylesheet" />
+    <link href="~/css/Notification/notification-modal.css" rel="stylesheet" />
+    <link href="~/css/HomePage/Instructor-css/HomePageInstructor.css" rel="stylesheet" />
+    <title>BrainStormEra</title>
+</head>
+
+<body>
+    @await Html.PartialAsync("~/Views/Shared/Instructor/Header/_Header.cshtml")
+    <div class="dialog-overlay" id="dialogOverlay">
+        <div class="dialog">
+            <h3>Select Users</h3>
+            <div>
+                <input type="checkbox" id="selectAllUsers" /> Select All
+            </div>
+            <ul id="userList"></ul>
+            <button id="sendToUsers">Send</button>
+        </div>
+    </div>
+    @await Html.PartialAsync("~/Views/Home/Notification/_NotificationsModal.cshtml", Model.Notifications)
+    @await Html.PartialAsync("~/Views/Home/Notification/addNotificationModal.cshtml", Model.Notifications)
+    @await Html.PartialAsync("~/Views/Home/Notification/editNotificationModal.cshtml", Model.Notifications)
+
+    <div class="container mt-5">
+        <!-- Header Section -->
+        <div class="text-center mb-5 w-100 position-relative">
+            <img src="~/lib/img/WelcomeHeader.png" class="img-welcomeheader" alt="Welcome Header">
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="container">
+        <div class="filters mb-3">
+            <div class="categories d-flex justify-content-start p-2 rounded" style="font-size: 2.2rem;">
+                Top 4 Recommend Course
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommend Course Section -->
+
+    <div class="row justify-content-center mb-5">
+        @foreach (var c in Model.RecommendedCourses)
+        {
+
+            <div class="col-md-2 col-sm-6 mb-4">
+                <a href="javascript:void(0);" onclick="viewDetailCourse('@c.CourseId')">
+
+                    <div class="card course-card h-100">
+                        <img src="@c.CoursePicture" class="card-img-top" alt="Course Image">
+                        <div class="card-body">
+                            <h5 class="card-title">@c.CourseName</h5>
+                            <p class="card-text">Price: @c.Price ₫</p>
+                            <p class="card-text">By @c.CreatedBy</p>
+                            <div class="rating">
+                                <span class="stars" data-rating="@c.StarRating"></span>
+                            </div>
+                            <div>
+                                <i class="fas fa-tags me-2"></i> Categories:
+                                @foreach (var category in c.CourseCategories)
+                                {
+                                    <span class="badge bg-primary me-1">@category.CourseCategoryName</span>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+        }
+    </div>
+
+
+
+    @await Html.PartialAsync("~/Views/Shared/Footer/_Footer.cshtml")
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+        crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/js/Notification/notification.js"></script>
+    <script>
+
+        $(document).ready(function () {
+            // Hiển thị đánh giá sao cho các khóa học
+            const starElements = document.querySelectorAll('.stars');
+            starElements.forEach(starElement => {
+                const rating = parseInt(starElement.getAttribute('data-rating'));
+                starElement.innerHTML = '★★★★★'.split('').map((star, index) => {
+                    return `<span style="color: ${index < rating ? '#ff9800' : '#ccc'}">${star}</span>`;
+                }).join('');
+            });
+
+
+
+            // Notifications Modal
+            $('#notificationsModal').on('shown.bs.modal', function () {
+                var userId = $('#userInfo').data('user-id');
+
+                $.get('@Url.Action("Notifications", "Notification")', function (data) {
+                    $('#notificationsModal .modal-body').html($(data).find('.modal-body').html());
+
+                    var currentUser = '@userId';
+                    $('#selectAll').on('change', function () {
+                        if (this.checked) {
+                            $('.notification-item').each(function () {
+                                var createdBy = $(this).data('createdby');
+                                if (createdBy === currentUser) {
+                                    $(this).find('.select-notification').show().prop('checked', true);
+                                }
+                            });
+                            $('#deleteSelected').show();
+                        } else {
+                            $('.select-notification').hide().prop('checked', false);
+                            $('#deleteSelected').hide();
+                        }
+                    });
+                });
+            });
+
+            // Add Notification Modal
+            $(document).on('click', '.add-notification', function () {
+                console.log('Add Notification button clicked');
+                $('#notificationsModal').modal('hide');
+                $('#addNotificationModal').modal('show');
+            });
+        });
+
+        // Logout confirmation
+        function confirmLogout() {
+            var result = confirm("Are you sure you want to logout?");
+            if (result) {
+                window.location.href = '@Url.Action("Logout", "Login")';
+            }
+        }
+
+        // View course details
+        function viewDetailCourse(courseId) {
+            document.cookie = "CourseId=" + courseId + "; path=/";
+            window.location.href = "@Url.Action("CourseDetail", "Course")";
+        }
+
+    </script>
+</body>
+
+</html>

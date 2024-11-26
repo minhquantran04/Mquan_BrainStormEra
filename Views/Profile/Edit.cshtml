@@ -1,0 +1,174 @@
+﻿@model BrainStormEra.Controllers.Account.ProfileController.ProfileEditViewModel
+@inject IHttpContextAccessor HttpContextAccessor
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/base.css">
+    <link href="~/css/HomePage/homePage.css" rel="stylesheet" />
+    <link href="~/css/HomePage/landing_page.css" rel="stylesheet" />
+    <link href="~/css/Profile/editProfile.css" rel="stylesheet" />
+    <link rel="icon" href="~/lib/img/BrainStormEra_logo.png" type="image/x-icon">
+</head>
+
+<body>
+    <!-- Header Section -->
+    <header class="container-fluid sticky-header" style="background-color: white;">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="@Url.Action("RedirectToHome", "Login")">
+                    <img src="~/lib/img/Login/BrainStormEra_logo.png" alt="BrainStormEra Logo" class="logo_img">
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <h2>Edit Profile</h2>
+        <form asp-action="Edit" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" asp-for="UserId" />
+
+            <!-- Avatar Upload Section -->
+            <div class="avatar-upload mb-3">
+                <img id="avatarPreview" src="@Url.Content(Model.UserPicture ?? "~/lib/img/User-img/default_user.png")"
+                    alt="Avatar" class="avatar-preview img-thumbnail" style="max-width: 150px;">
+                <label for="avatarUpload" class="form-label">Change Avatar</label>
+                <input type="file" id="avatarUpload" name="avatar" accept=".png, .jpeg, .jpg" class="form-control"
+                    onchange="previewAvatar(); validateFile();" />
+                <span id="fileError" class="text-danger"></span> <!-- Hiển thị lỗi -->
+            </div>
+
+            <!-- Full Name with Validation -->
+            <div class="form-group">
+                <label asp-for="FullName" class="control-label"></label>
+                <input asp-for="FullName" class="form-control" id="fullName" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label asp-for="UserEmail" class="control-label"></label>
+                <input asp-for="UserEmail" class="form-control" type="email" />
+                <span asp-validation-for="UserEmail" class="text-danger"></span>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="form-group">
+                <label asp-for="PhoneNumber" class="control-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <!-- Gender Dropdown -->
+            <div class="form-group">
+                <label asp-for="Gender" class="control-label"></label>
+                <select asp-for="Gender" class="form-control">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+                <span asp-validation-for="Gender" class="text-danger"></span>
+            </div>
+
+            <!-- Address -->
+            <div class="form-group">
+                <label asp-for="UserAddress" class="control-label"></label>
+                <input asp-for="UserAddress" class="form-control" />
+                <span asp-validation-for="UserAddress" class="text-danger"></span>
+            </div>
+
+            <!-- Date of Birth with Validation -->
+            <div class="form-group">
+                <label asp-for="DateOfBirth" class="control-label"></label>
+                <input asp-for="DateOfBirth" class="form-control" type="date" id="dob" />
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+
+            <!-- Submit and Cancel Buttons -->
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-custom" id="saveButton">Save Changes</button>
+                <a class="btn btn-secondary" asp-action="Index" asp-route-accountId="@Model.UserId">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    @await Html.PartialAsync("~/Views/Shared/Footer/_Footer.cshtml")
+
+    <!-- Scripts -->
+    <script>
+        // Preview avatar when user uploads an image
+        function previewAvatar() {
+            const file = document.getElementById('avatarUpload').files[0];
+            const preview = document.getElementById('avatarPreview');
+            const errorDisplay = document.getElementById('fileError');
+
+            // Clear previous errors
+            errorDisplay.innerHTML = '';
+
+            // Check if file is selected
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    preview.src = e.target.result; // Update the preview image
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Validate the image file, but only if a file is selected
+        function validateFile() {
+            const fileInput = document.getElementById('avatarUpload');
+            const file = fileInput.files[0];
+            const errorDisplay = document.getElementById('fileError');
+            const saveButton = document.getElementById('saveButton');
+            errorDisplay.innerHTML = ''; // Clear error message
+
+            if (file) {
+                // Kiểm tra loại file (chỉ cho phép .png, .jpeg, .jpg)
+                const validTypes = ['image/png', 'image/jpeg'];
+                if (!validTypes.includes(file.type)) {
+                    errorDisplay.innerHTML = "Chỉ chấp nhận tệp PNG và JPEG.";
+                    saveButton.disabled = true; // Disable save button
+                    return false;
+                }
+
+                // Kiểm tra kích thước file (giới hạn 2MB)
+                const maxSize = 2 * 1024 * 1024; // 2MB
+                if (file.size > maxSize) {
+                    errorDisplay.innerHTML = "Kích thước tệp không được vượt quá 2MB.";
+                    saveButton.disabled = true; // Disable save button
+                    return false;
+                }
+
+                // Nếu tệp hợp lệ, bật lại nút save
+                saveButton.disabled = false;
+                return true;
+            }
+
+            // Nếu không có file, cho phép submit form (tệp ảnh giữ nguyên)
+            saveButton.disabled = false;
+            return true;
+        }
+
+        // Check the full form before submission
+        function validateForm() {
+            return validateFile(); // Nếu file không hợp lệ, form không được submit
+        }
+    </script>
+
+    <!-- Link to Bootstrap JS and Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

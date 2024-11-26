@@ -1,0 +1,220 @@
+﻿/* Heading Style */
+.achievement-header {
+    color: var(--linkedin-btn-bg-color);
+    font-size: 3.5rem;
+    margin-top: 3rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+/* Card Styling */
+.achievement-card-custom {
+    background-color: var(--linkedin-btn-bg-color);
+    color: var(--text-color-light);
+    border-radius: 15px;
+    box-shadow: 0 6px 12px var(--box-shadow-color);
+    transition: transform 0.3s ease;
+    width: 280px;
+    height: auto;
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Image Styling inside card */
+.achievement-image {
+    width: 90%;
+    height: auto;
+    max-height: 250px;
+    object-fit: contain;
+    border-radius: 10px;
+    margin-top: 15px;
+}
+
+/* Text inside card */
+.achievement-title-text {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-color-light);
+    margin-top: 15px;
+    margin-bottom: 0;
+    text-align: center;
+}
+
+/* Card Body */
+.achievement-card-body {
+    padding: 0px;
+    text-align: center;
+}
+
+/* Modal Popup Styling */
+.modal-content {
+    background-color: var(--secondary-primary-color);
+    color: var(--text-color-light);
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 6px 12px var(--box-shadow-color);
+    max-width: 800px;
+    margin: auto;
+}
+
+.modal-header {
+    border-bottom: none;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-weight: bold;
+    font-size: 2rem;
+    text-align: center;
+    color: var(--text-color-light);
+    margin: 0;
+}
+
+.modal-body {
+    font-size: 1.2rem;
+    text-align: center;
+    padding: 2.5rem 2rem;
+    color: var(--text-color-light);
+}
+
+.achievement-modal-image {
+    max-width: 150px;
+    max-height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.achievement-modal-title {
+    font-size: 1.7rem;
+    font-weight: bold;
+}
+
+.achievement-modal-description {
+    font-size: 1.3rem;
+    margin: 0.5rem 0;
+}
+
+.achievement-modal-date {
+    font-size: 1.1rem;
+    color: var(--text-color-light);
+}
+
+.btn-close {
+    background-color: var(--white-color);
+    border-radius: 50%;
+    border: none;
+    font-size: 1.5rem;
+}
+
+/* Achievement Card Container */
+.achievement-flex-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+/* Achievement No Data Text */
+.achievement-no-data {
+    font-size: 1.5rem;
+    color: var(--text-color-light);
+    text-align: center;
+}
+
+.achievement-flex-item {
+    flex: 0 0 30%;
+    /* Set each item to take up approximately one-third of the row */
+    max-width: 30%;
+    /* Prevent items from exceeding one-third width */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (min-width: 768px) {
+    .achievement-flex-item {
+        flex: 0 0 33.3333%;
+        max-width: 33.3333%;
+    }
+}
+
+@media (max-width: 767px) {
+    .achievement-card-custom {
+        width: 50%;
+        height: auto;
+        margin-bottom: 20px;
+        padding: 15px;
+    }
+
+    .achievement-header {
+        font-size: 2.5rem;
+        margin-top: 2rem;
+    }
+
+    .achievement-title-text {
+        font-size: 1.5rem;
+    }
+
+    .achievement-image {
+        width: 80%;
+        max-height: 200px;
+    }
+
+    .achievement-modal-image {
+        max-width: 100px;
+        max-height: 100px;
+    }
+
+    .achievement-modal-title {
+        font-size: 1.5rem;
+    }
+
+    .achievement-modal-description {
+        font-size: 1.1rem;
+    }
+
+    .achievement-modal-date {
+        font-size: 1rem;
+    }
+}
+
+/* Adjustments for Smaller Screens */
+@media (max-width: 992px) {
+    .achievement-flex-item {
+        flex: 0 0 45%;
+        /* Two in a row on medium screens */
+        max-width: 45%;
+    }
+}
+
+@media (max-width: 768px) {
+    .achievement-flex-item {
+        flex: 0 0 100%;
+        /* Single column on small screens */
+        max-width: 100%;
+    }
+}
+
+/* Achievement Image Circular Style */
+.achievement-image {
+    width: 90%;
+    height: auto;
+    max-height: 250px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-top: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Hover Effect for Achievement Image */
+.achievement-image:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}

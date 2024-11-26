@@ -1,0 +1,127 @@
+﻿@{
+}
+@model List<Chapter>
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Chapter</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Base CSS (Common Styles) -->
+    <!-- Page-Specific Styles -->
+    <link rel="stylesheet" href="~/css/HomePage/landing_page.css">
+    <link rel="stylesheet" href="~/css/Chapter/ViewChapter.css">
+    <link rel="stylesheet" href="~/css/base.css">
+    <link rel="icon" href="~/lib/img/BrainStormEra_logo.png" type="image/x-icon">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+</head>
+
+<body>
+    @{
+
+        string userRole = Context.Request.Cookies["user_role"];
+    }
+
+    @if (userRole == "2")
+    {
+        @await Html.PartialAsync("~/Views/Shared/Instructor/Header/_Header.cshtml")
+    }
+    else if (userRole == "1")
+    {
+        @await Html.PartialAsync("~/Views/Shared/Admin/Header/_Header.cshtml")
+
+    }
+    <div class="row">
+        <!-- Sidebar -->
+        @{
+
+
+            var courseName = Context.Request.Cookies["CourseName"];
+
+            string courseId = Context.Request.Cookies["CourseId"];
+
+
+            <div class="col-md-3 bg-SECONDARY sidebar p-3">
+
+                <div class="text-start mb-3">
+                    <button type="button" onclick="window.location.href='@Url.Action("EditCourse", "Course")'"
+                        class="btn btn-sm">
+                        <i class="fas fa-arrow-left"></i> Back to Course
+                    </button>
+                </div>
+                <a class="btn btn-primary w-100 mb-3" href="@Url.Action("AddChapter", "Chapter")">Add Chapter</a>
+                <a class="btn btn-outline-secondary w-100 mb-3" href="@Url.Action("DeleteChapter", "Chapter")">Delete
+                    Chapter</a>
+                <a class="btn btn-outline-secondary w-100" href="@Url.Action("ChapterManagement", "Chapter")">Chapter
+                    Management</a>
+            </div>
+        }
+
+        <!-- Main Content for View Chapter -->
+        <div class="col-md-9 d-flex align-items-start vh-100">
+            <div class="card w-100">
+                <div class="card-header gradient-header">
+                    @courseName > CHAPTER MANAGEMENT
+                </div>
+                <div class="card-body">
+                    <!-- List of chapters with edit and manage lessons buttons -->
+                    @foreach (var c in Model)
+                    {
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5>@c.ChapterName</h5>
+                                <!-- Thêm thuộc tính data-chapterid vào nút "Edit" -->
+                                <a class="btn btn-outline-primary btn-sm edit-chapter" href="javascript:void(0);"
+                                    data-chapterid="@c.ChapterId">Edit</a>
+                            </div>
+                            <p>@c.ChapterDescription</p>
+                            <a class="btn btn-primary manage-lessons" href="javascript:void(0);"
+                                data-chapterid="@c.ChapterId">Manage Lessons</a>
+                        </div>
+                        <hr />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    @await Html.PartialAsync("~/Views/Shared/Chatbot/Chatbot.cshtml")
+    @await Html.PartialAsync("~/Views/Shared/Footer/_Footer.cshtml")
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Hàm lưu cookie
+        function setCookie(name, value) {
+            document.cookie = `${name}=${value}; path=/`;
+        }
+
+        // Xử lý sự kiện cho nút "Edit" để điều hướng đến trang chỉnh sửa chương
+        document.querySelectorAll('.edit-chapter').forEach(button => {
+            button.addEventListener('click', function () {
+                var chapterId = this.getAttribute('data-chapterid');
+                setCookie('ChapterId', chapterId);
+                window.location.href = "@Url.Action("EditChapter", "Chapter")";
+            });
+        });
+
+        // Xử lý sự kiện cho nút "Manage Lessons" để điều hướng đến trang LessonManagement
+        document.querySelectorAll('.manage-lessons').forEach(button => {
+            button.addEventListener('click', function () {
+                var chapterId = this.getAttribute('data-chapterid');
+                setCookie('ChapterId', chapterId);  // Lưu ChapterId vào cookie
+                window.location.href = "@Url.Action("LessonManagement", "Lesson")";  // Điều hướng đến LessonManagement
+            });
+        });
+    </script>
+
+</body>
+
+</html>

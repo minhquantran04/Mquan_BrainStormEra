@@ -1,0 +1,341 @@
+﻿/* Base Variables */
+:root {
+    --linkedin-btn-bg-color: #0A66C2;
+    --secondary-primary-color: #2C3E50;
+    --white-color: #FFFFFF;
+    --black-color: #333333;
+    --gray-color-main: #6C757D;
+    --yellow-color: #FFC107;
+    --red-color: #DC3545;
+    --green-color: #28A745;
+    --transition-speed: 0.3s;
+}
+
+/* Smooth Scroll and Base Styling */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #F4F7F6;
+    transition: background-color var(--transition-speed) ease;
+}
+
+/* Header Styles with Animation */
+h2 {
+    color: var(--linkedin-btn-bg-color);
+    font-weight: bold;
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    animation: fadeInDown 0.7s ease;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* User Counts Styles */
+.user-counts {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    background-color: var(--white-color);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: box-shadow var(--transition-speed) ease;
+}
+
+.user-counts p {
+    margin: 0;
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: var(--gray-color-main);
+    text-align: center;
+}
+
+.user-counts p strong {
+    color: var(--linkedin-btn-bg-color);
+    font-weight: bold;
+}
+
+/* Table Styles with Hover Effects */
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 1.5rem;
+    color: var(--gray-color-main);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: box-shadow var(--transition-speed) ease;
+}
+
+.table thead th {
+    background-color: var(--linkedin-btn-bg-color);
+    color: var(--white-color);
+    font-weight: bold;
+    border: none;
+    padding: 12px;
+    transition: background-color var(--transition-speed) ease;
+}
+
+.table tbody tr {
+    background-color: var(--white-color);
+    color: var(--black-color);
+    font-weight: bold;
+    transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+}
+
+.table tbody tr:hover {
+    background-color: #E9ECEF;
+    transform: scale(1.01);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.table tbody tr td {
+    border: none;
+    padding: 10px;
+}
+
+/* Modal Styles with Smooth Transitions */
+.user-details-modal .modal-dialog {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    transition: all var(--transition-speed) ease;
+}
+
+.user-details-modal .modal-content {
+    background-color: var(--secondary-primary-color);
+    color: var(--white-color);
+    border-radius: 12px;
+    max-width: 600px;
+    padding: 20px;
+    animation: modalSlideIn 0.5s ease;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Button Styles with Interactive Effects */
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-left: 124px;
+    margin-right: -40px;
+}
+
+.btn-warning,
+.btn-ban,
+.btn-unban {
+    color: var(--white-color);
+    border: none;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 6px;
+    transition: all var(--transition-speed) ease;
+    transform: perspective(1px) translateZ(0);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-warning {
+    background-color: var(--yellow-color);
+}
+
+.btn-ban {
+    background-color: var(--red-color);
+}
+
+.btn-unban {
+    background-color: var(--green-color);
+}
+
+.btn-warning:hover,
+.btn-ban:hover,
+.btn-unban:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Search Container with Interactive Design */
+.search-container {
+    display: flex;
+    gap: 15px;
+    max-width: 600px;
+    margin: auto;
+    max-height: 100px;
+    transition: all var(--transition-speed) ease;
+}
+
+#searchInput {
+    transition: all var(--transition-speed) ease;
+    border-radius: 8px;
+}
+
+#searchInput:focus {
+    box-shadow: 0 0 10px rgba(10, 102, 194, 0.2);
+    border-color: var(--linkedin-btn-bg-color);
+}
+
+#searchButton {
+    background-color: var(--linkedin-btn-bg-color);
+    color: var(--white-color);
+    border: 2px solid transparent;
+    padding: 10px 20px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all var(--transition-speed) ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#searchButton:hover {
+    background-color: var(--secondary-primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Add remaining styles from the original CSS file... */
+/* (Keep the rest of the original styles, just add these enhancements) */
+
+/* Responsive adjustments */
+@media (max-width: 390px) {
+
+    /* Keep existing mobile styles, but add subtle animations */
+    .button-row,
+    .search-container {
+        transition: all var(--transition-speed) ease;
+    }
+}
+
+.certi-detail {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    background-color: #f4f6f7;
+    padding: 20px;
+}
+
+.certificate-content {
+    width: 90%;
+    max-width: 800px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid var(--linkedin-btn-bg-color);
+}
+
+.certificate-header {
+    color: var(--linkedin-btn-bg-color);
+    letter-spacing: 2px;
+    font-size: 1.2rem;
+}
+
+.certificate-title {
+    color: var(--secondary-primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.certificate-body {
+    color: var(--gray-color-main);
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.certificate-username {
+    color: var(--linkedin-btn-bg-color);
+    font-size: 2rem;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.certificate-logo {
+    display: flex;
+    justify-content: center;
+    margin: 30px 0;
+}
+
+.certificate-logo img {
+    max-width: 200px;
+    opacity: 0.8;
+}
+
+.certificate-footer {
+    color: var(--gray-color-main);
+    font-size: 0.9rem;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 15px;
+    text-align: center;
+}
+
+/* Optional decorative elements */
+.certificate-content::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: repeating-linear-gradient(transparent,
+            transparent 20px,
+            rgba(10, 102, 194, 0.05) 20px,
+            rgba(10, 102, 194, 0.05) 40px);
+    transform: rotate(-45deg);
+    pointer-events: none;
+}
+
+@media (max-width: 768px) {
+    .certificate-content {
+        padding: 20px;
+        width: 95%;
+    }
+
+    .certificate-title {
+        font-size: 2rem;
+    }
+
+    .certificate-username {
+        font-size: 1.5rem;
+    }
+}
+
+#completedCoursesList li a {
+    display: inline-block;
+    color: #fff;
+    border-radius: 5px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#completedCoursesList li a:hover {
+    transform: scale(1.05);
+}

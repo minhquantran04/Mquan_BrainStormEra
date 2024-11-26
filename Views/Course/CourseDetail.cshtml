@@ -1,0 +1,544 @@
+﻿@model BrainStormEra.Models.Course
+@{
+    var currentUserId = Context.Request.Cookies["user_id"];
+    var currentRole = Context.Request.Cookies["user_role"];
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Model.CourseName</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/Course/CourseDetail.css">
+    <link rel="stylesheet" href="~/css/base.css">
+    <link rel="stylesheet" href="~/css/HomePage/homePage.css">
+    <link rel="stylesheet" href="~/css/HomePage/landing_page.css">
+    <link rel="icon" href="~/lib/img/BrainStormEra_logo.png" type="image/x-icon">
+</head>
+
+<body>
+
+    @{
+        string userRole = Context.Request.Cookies["user_role"];
+    }
+
+    <!-- Header -->
+    @if (userRole == "2")
+    {
+        @await Html.PartialAsync("~/Views/Shared/Instructor/Header/_Header.cshtml")
+    }
+    else if (userRole == "1")
+    {
+        @await Html.PartialAsync("~/Views/Shared/Admin/Header/_Header.cshtml")
+    }
+    else if (userRole == "3")
+    {
+        @await Html.PartialAsync("~/Views/Shared/Learner/Header/_Header.cshtml")
+    }
+    else
+    {
+        <header class="container-fluid sticky-header">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="@Url.Action("Index", "Home" )">
+                        <img src="~/lib/img/BrainStormEra_logo.png" alt="Logo" class="logo_img">
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Index", "Home" )">DASHBOARD</a>
+                            </li>
+                            <li class="nav-item"><a class="nav-link"
+                                    href="@Url.Action("CourseManagement", "Course")">COURSE</a></li>
+                        </ul>
+                        <div class="profile d-flex align-items-center">
+                            <a href="@Url.Action("LoginPage", "Login" )" class="btn_login">Log In</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+    }
+
+    <!-- Course Information -->
+    <div class="header header-detail">
+        <div class="container">
+            <div class="row py-5">
+                <!-- Left Column -->
+                <div class="col-md-9">
+                    <div class="display-4 course-name">@Model.CourseName</div>
+                    <p class="lead">@Model.CourseDescription</p>
+                    <div class="d-flex mb-2 mt-5">
+                        <h3 class="price">@Model.Price.ToString("N2", new System.Globalization.CultureInfo("vi-VN")) ₫
+                    </div>
+                    <div class="d-flex mb-4 mt-2">
+                        @if (userRole == "3")
+                        {
+                            bool isBanned = ViewBag.IsBanned ?? false;
+                            bool isEnrolled = ViewBag.IsEnrolled ?? false;
+                            if (isBanned)
+                            {
+                                <div class="alert alert-danger">You have been banned from enrolling in this course.</div>
+                            }
+                            else if (isEnrolled)
+                            {
+                                <button class="btn btn-primary go-to-course"
+                                    onclick="window.location.href='@Url.Action("ViewLessonLearner", "Lesson")'">Go to
+                                    Course</button>
+                            }
+                            else
+                            {
+                                <form id="enrollForm" method="post" action="@Url.Action("Enroll", "Course")">
+                                    <input type="hidden" name="courseId" value="@Model.CourseId" />
+                                    <button type="button" class="btn btn-success enroll-btn"
+                                        onclick="confirmEnroll()">Enroll</button>
+                                </form>
+                            }
+                        }
+                        else if (string.IsNullOrEmpty(userRole))
+                        {
+                            <button class="btn btn-success"
+                                onclick="alert('You need to log in to enroll in this course.');">Enroll</button>
+                        }
+                    </div>
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger col-md-6 text-center">@TempData["ErrorMessage"]</div>
+                    }
+                    <div class="d-flex text-white mt-3">
+                        <div class="me-4">
+                            <i class="fas fa-tags me-2"></i> Category:
+                            @foreach (var category in ViewBag.CourseCategories as List<string>)
+                            {
+                                <span class="badge bg-primary me-1">@category</span>
+                            }
+                        </div>
+                        <div class="me-4"><i class="fas fa-users me-2"></i> Students: @ViewBag.LearnersCount</div>
+                        <div class="me-4"><i class="fas fa-user me-2"></i> Created by: @ViewBag.CreatedBy</div>
+                        <div class="me-4"><i class="fas fa-star me-2"></i> @ViewBag.AverageRating.ToString("0.0")
+                            (@ViewBag.TotalComments comments)</div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-md-3 d-flex align-items-center">
+                    <img src="@Model.CoursePicture" alt="Course Image" class="img-fluid w-100 rounded">
+                </div>
+            </div>
+            <div class="progress progress-bar-lesson-div mb-4">
+                <div class="progress-bar progress-bar-lesson" role="progressbar" style="width: @ViewBag.Progress%"
+                    aria-valuenow="@ViewBag.Progress" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-num">@ViewBag.Progress.ToString("0.0")%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="container">
+        <!-- Navigation Tabs -->
+        <nav class="nav nav-pills nav-fill mb-4">
+            <a class="nav-link nav-introduction active" href="#introduction">Introduction</a>
+            @if (!string.IsNullOrEmpty(userRole))
+            {
+                <a class="nav-link" href="#curriculum">Content</a>
+            }
+            <a class="nav-link" href="#rating">Rating</a>
+        </nav>
+
+        <!-- Introduction Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 id="introduction">Course Description</h2>
+                <p>@Model.CourseDescription</p>
+            </div>
+        </div>
+
+        <!-- Course Content Section (Visible only when logged in) -->
+        @if (!string.IsNullOrEmpty(userRole))
+        {
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 id="curriculum">Course Content</h3>
+                    <p>@Model.Chapters.Count Chapters • @ViewBag.TotalLessons Lessons</p>
+                    <div class="accordion" id="courseContentAccordion">
+                        @foreach (var chapter in Model.Chapters)
+                        {
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingChapter@(chapter.ChapterId)">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapseChapter@(chapter.ChapterId)" aria-expanded="false"
+                                        aria-controls="collapseChapter@(chapter.ChapterId)">
+                                        @chapter.ChapterName
+                                    </button>
+                                </h2>
+                                <div id="collapseChapter@(chapter.ChapterId)" class="accordion-collapse collapse"
+                                    aria-labelledby="headingChapter@(chapter.ChapterId)"
+                                    data-bs-parent="#courseContentAccordion">
+                                    <div class="accordion-body">
+                                        <ul class="list-group">
+                                            @foreach (var lesson in chapter.Lessons)
+                                            {
+                                                <li class="list-group-item">
+                                                    @if (lesson.LessonTypeId == 2)
+                                                    {
+                                                        <i class="fa-solid fa-book-open"></i> @lesson.LessonName
+                                                    }
+                                                    else if (lesson.LessonTypeId == 1)
+                                                    {
+                                                        <i class="fa-regular fa-circle-play"></i> @lesson.LessonName
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fas fa-file"></i> @lesson.LessonName
+                                                    }
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Rating Section -->
+        <div class="card rating-box mb-4">
+            <div class="card-body">
+                <h3 id="rating">Rating</h3>
+                <div class="d-flex align-items-center mb-4">
+                    <i class="fas fa-star me-2"></i> @(ViewBag.AverageRating?.ToString("0.0") ?? "0.0")
+                    (@(ViewBag.TotalComments ?? 0) comments)
+                    <div class="stars ms-3">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="fas fa-star @(i <= (ViewBag.AverageRating ?? 0) ? "selected" : "")"></i>
+                        }
+                    </div>
+                </div>
+
+                <div class="rating-breakdown">
+                    @for (int i = 5; i >= 1; i--)
+                    {
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="stars"><i class="fas fa-star selected"></i> @i stars</div>
+                            <div class="progress flex-fill mx-3">
+                                <div class="progress-bar" role="progressbar"
+                                    style="width: @(ViewBag.RatingPercentages[i] * 100)%" aria-valuenow="50"
+                                    aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div>@((ViewBag.RatingPercentages[i] * 100).ToString("F2"))%</div>
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Comment Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 id="feedback">Comments</h3>
+                @if (ViewBag.Comments != null)
+                {
+                    @foreach (var comment in ViewBag.Comments)
+                    {
+                        <div class="comment mb-4 d-flex border-bottom pb-3">
+                            <img src="@comment.User.UserPicture" class="avatar rounded-circle me-3"
+                                style="width: 40px; height: 40px;" alt="User Avatar">
+                            <div class="flex-fill">
+                                <div class="fw-bold me-2">@comment.User.FullName</div>
+                                <div class="stars me-3 edit-stars" id="editStars-@comment.FeedbackId">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="fas fa-star @(i <= comment.StarRating ? "selected" : "")" data-value="@i"
+                                            onclick="feedbackManager.selectStarForEdit(this, '@comment.FeedbackId')"></i>
+                                    }
+                                    @if (comment.HiddenStatus)
+                                    {
+                                        <i class="fas fa-eye-slash"></i> <!-- Eye icon for hidden feedback -->
+                                    }
+                                    <div class="d-flex align-items-center">
+                                    </div>
+                                    @if (comment.UserId == currentUserId || userRole == "1")
+                                    {
+                                        <div class="comment-options">
+                                            <button class="btn btn-link"
+                                                onclick="feedbackManager.toggleMenu(event, 'menu-@comment.FeedbackId')">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-menu" id="menu-@comment.FeedbackId">
+                                                <button class="dropdown-item"
+                                                    onclick="feedbackManager.enableEditMode('@comment.FeedbackId')">Edit</button>
+                                                <button class="dropdown-item text-danger"
+                                                    onclick="feedbackManager.deleteComment('@comment.FeedbackId')">Delete</button>
+                                            </div>
+                                        </div>
+                                    }
+
+                                </div>
+                                <div id="commentText-@comment.FeedbackId" class="comment-text">@comment.Comment</div>
+                                <textarea id="editComment-@comment.FeedbackId" class="form-control d-none"
+                                    rows="3">@comment.Comment</textarea>
+                                <button class="btn btn-primary d-none mt-2" id="saveButton-@comment.FeedbackId"
+                                    onclick="feedbackManager.saveComment('@comment.FeedbackId')">Save</button>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Feedback Submission Section (Visible only when logged in) -->
+        @if (Model.CourseStatus == 2 && !string.IsNullOrEmpty(userRole))
+        {
+            <div class="card feedback-section mb-4 text-center">
+                <div class="card-body">
+                    <div class="stars">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="fas fa-star" data-value="@i" onclick="feedbackManager.selectStarForFeedback(this)"></i>
+                        }
+                    </div>
+                    <div class="comment-input">
+                        <textarea id="feedbackComment" class="form-control feedback w-50"
+                            placeholder="Comment..."></textarea>
+                        <button class="btn btn-primary mt-2 comment-btn"
+                            onclick="feedbackManager.submitFeedback('@Model.CourseId')">Comment</button>
+                    </div>
+                </div>
+            </div>
+            <div id="feedbackMessage" class="mt-2 text-center"></div>
+        }
+
+        <!-- Action Buttons (Visible only to specific user roles) -->
+        @if (!string.IsNullOrEmpty(userRole))
+        {
+            <div class="d-flex justify-content-center mt-4">
+                @if (userRole == "1" && Model.CourseStatus == 1)
+                {
+                    <form asp-action="ChangeStatus" method="post">
+                        <input type="hidden" name="courseId" value="@Model.CourseId" />
+                        <input type="hidden" name="status" value="2" />
+                        <button class="btn btn-approve me-2">Approve</button>
+                    </form>
+                    <form asp-action="ChangeStatus" method="post">
+                        <input type="hidden" name="courseId" value="@Model.CourseId" />
+                        <input type="hidden" name="status" value="0" />
+                        <button class="btn btn-reject">Reject</button>
+                    </form>
+                }
+                @if (userRole == "2" && Model.CourseStatus == 3)
+                {
+                    <button id="requestToAdminBtn" class="btn btn-request ms-2"
+                        onclick="requestToAdmin('@Model.CourseId')">Request to Admin</button>
+                }
+                @if (userRole == "2" && Model.CourseStatus == 0)
+                {
+                    <form asp-action="DeleteCourse" method="post" onsubmit="return confirmDelete();" class="ms-2">
+                        <button type="submit" class="btn btn-delete">Delete</button>
+                    </form>
+                }
+            </div>
+        }
+
+        <!-- Admin Request Message -->
+        <div id="adminRequestMessage" class="d-flex justify-content-center text-center mt-2 d-inline-block"></div>
+
+    </div>
+
+    @await Html.PartialAsync("~/Views/Shared/Footer/_Footer.cshtml")
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/js/Course/CourseDetail.js"></script>
+    <script>
+        // Khởi tạo URL và dữ liệu từ Razor trong biến riêng biệt
+        const viewLessonUrl = '@Url.Action("ViewLessonLearner", "Lesson")';
+        const requestToAdminUrl = '@Url.Action("RequestToAdmin", "Course")';
+        const isLoggedIn = '@ViewBag.IsLoggedIn' === 'True';
+        const message = '@ViewBag.Message';
+
+        function setCourseCookieAndRedirect(courseId) {
+            document.cookie = `CourseId=${courseId}; path=/;`;
+            window.location.href = viewLessonUrl;
+        }
+
+        function confirmEnroll() {
+            if (confirm("Are you sure you want to enroll in this course?")) {
+                document.getElementById("enrollForm").submit();
+            }
+        }
+
+        function confirmDelete() {
+            return confirm("Are you sure you want to delete this course?");
+        }
+
+        function requestToAdmin(courseId) {
+            if (confirm("Are you sure you want to request approval from admin?")) {
+                $.ajax({
+                    type: "POST",
+                    url: requestToAdminUrl,
+                    data: { courseId: courseId },
+                    success: function (response) {
+                        let adminRequestMessage = document.getElementById("adminRequestMessage");
+                        if (response.success) {
+                            adminRequestMessage.innerHTML = `<div class="alert alert-success d-inline-block">${response.message}</div>`;
+                            document.getElementById("requestToAdminBtn").disabled = true;
+                        } else {
+                            adminRequestMessage.innerHTML = `<div class="alert alert-danger d-inline-block">${response.message}</div>`;
+                        }
+                    },
+                    error: function () {
+                        document.getElementById("adminRequestMessage").innerHTML = `<div class="alert alert-danger d-inline-block">An error occurred while sending the request.</div>`;
+                    }
+                });
+            }
+        }
+
+        if (!isLoggedIn && message) {
+            alert(message);
+        }
+
+        const feedbackManager = {
+            selectedRating: 0,
+            editSelectedRating: {},
+
+            // Chọn sao cho phần feedback khi thêm mới
+            selectStarForFeedback(starElement) {
+                this.selectedRating = parseInt(starElement.getAttribute('data-value'));
+                document.querySelectorAll('.feedback-section .stars .fa-star').forEach((star, index) => {
+                    star.classList.toggle('selected', index < this.selectedRating);
+                });
+            },
+
+            // Chọn sao cho phần chỉnh sửa feedback
+            selectStarForEdit(starElement, feedbackId) {
+                const rating = parseInt(starElement.getAttribute('data-value'));
+                this.editSelectedRating[feedbackId] = rating;
+
+                // Đánh dấu sao được chọn lại khi ở chế độ chỉnh sửa
+                document.querySelectorAll(`#editStars-${feedbackId} .fa-star`).forEach((star, index) => {
+                    star.classList.toggle('selected', index < rating);
+                });
+            },
+
+            toggleMenu(event, menuId) {
+                event.stopPropagation(); // Ngăn không cho sự kiện lan ra ngoài
+                const menu = document.getElementById(menuId);
+                // Đóng các menu khác và chỉ mở menu được nhấp
+                document.querySelectorAll('.dropdown-menu').forEach(m => {
+                    if (m.id !== menuId) {
+                        m.style.display = 'none';
+                    }
+                });
+                // Chuyển đổi trạng thái hiển thị của menu này
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            },
+
+            enableEditMode(feedbackId) {
+                document.getElementById(`commentText-${feedbackId}`).classList.add('d-none');
+                document.getElementById(`editComment-${feedbackId}`).classList.remove('d-none');
+                document.getElementById(`saveButton-${feedbackId}`).classList.remove('d-none');
+                this.editSelectedRating[feedbackId] = this.getCurrentRating(feedbackId);
+            },
+
+            getCurrentRating(feedbackId) {
+                const stars = document.querySelectorAll(`#editStars-${feedbackId} .fa-star.selected`);
+                return stars.length;
+            },
+
+            saveComment(feedbackId) {
+                const newComment = document.getElementById(`editComment-${feedbackId}`).value;
+                const newStarRating = this.editSelectedRating[feedbackId] || 0;
+                if (newStarRating < 1 || newStarRating > 5) {
+                    alert("Star rating must be between 1 and 5.");
+                    return;
+                }
+                fetch(`/Feedback/EditFeedback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ FeedbackId: feedbackId, Comment: newComment, StarRating: newStarRating })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById(`commentText-${feedbackId}`).textContent = newComment;
+                            document.getElementById(`commentText-${feedbackId}`).classList.remove('d-none');
+                            document.getElementById(`editComment-${feedbackId}`).classList.add('d-none');
+                            document.getElementById(`saveButton-${feedbackId}`).classList.add('d-none');
+                            const stars = document.querySelectorAll(`#editStars-${feedbackId} .fa-star`);
+                            stars.forEach((star, index) => {
+                                star.classList.toggle('selected', index < newStarRating);
+                            });
+                            alert("Comment updated successfully");
+                        } else {
+                            alert("Failed to update comment");
+                        }
+                    });
+            },
+
+            submitFeedback(courseId) {
+                const comment = document.getElementById("feedbackComment").value;
+                if (this.selectedRating === 0 || comment.trim() === "") {
+                    document.getElementById("feedbackMessage").innerHTML = "<div class='alert alert-warning'>Please provide both a rating and a comment.</div>";
+                    return;
+                }
+                fetch(`/Feedback/CreateFeedback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ courseId, starRating: this.selectedRating, comment })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById("feedbackMessage").innerHTML = `<div class='alert alert-success'>${data.message}</div>`;
+                            this.selectedRating = 0;
+                            document.querySelectorAll('.feedback-section .stars .fa-star').forEach(star => star.classList.remove('selected'));
+                        } else {
+                            document.getElementById("feedbackMessage").innerHTML = `<div class='alert alert-danger'>${data.message}</div>`;
+                        }
+                    });
+            },
+
+            deleteComment(feedbackId) {
+                if (confirm("Are you sure you want to delete this comment?")) {
+                    fetch(`/Feedback/DeleteFeedback`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(feedbackId)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert("Comment deleted successfully");
+                                location.reload();
+                            } else {
+                                alert("Failed to delete comment");
+                            }
+                        });
+                }
+            }
+        };
+
+        window.onclick = function (event) {
+            if (!event.target.closest('.comment-options') && !event.target.closest('.dropdown-menu')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => menu.style.display = 'none');
+            }
+        };
+    </script>
+
+</body>
+
+</html>

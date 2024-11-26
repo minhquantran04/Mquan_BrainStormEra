@@ -1,0 +1,9 @@
+﻿.vs/
+# Ignore bin and obj folders
+**/bin/
+**/obj/
+node_modules/
+appsettings.json
+appsettings.Development.json
+wwwroot/uploads/
+wwwroot/lib/

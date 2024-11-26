@@ -1,0 +1,285 @@
+﻿@model List<BrainStormEra.Views.Profile.UserDetailsViewModel>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/HomePage/landing_page.css">
+    <link rel="stylesheet" href="~/css/base.css">
+    <link href="~/css/Profile/AdminProfile.css" rel="stylesheet" />
+    <link rel="icon" href="~/lib/img/BrainStormEra_logo.png" type="image/x-icon">
+</head>
+
+<body>
+    @await Html.PartialAsync("~/Views/Shared/Admin/Header/_Header.cshtml")
+
+    <main class="container mt-5">
+        <h2>Manage Users</h2>
+        <div class="user-counts mb-3">
+            <p><strong>Total Users:</strong> @ViewBag.UserRoleCounts.TotalUsers</p>
+            <p><strong>Admins:</strong> @ViewBag.UserRoleCounts.AdminCount</p>
+            <p><strong>Instructors:</strong> @ViewBag.UserRoleCounts.InstructorCount</p>
+            <p><strong>Learners:</strong> @ViewBag.UserRoleCounts.LearnerCount</p>
+        </div>
+        <div class="search-container mb-3">
+            <input type="text" id="searchInput" class="form-control"
+                placeholder="Search by User ID, Username, or Full Name" onkeyup="filterTable()">
+            <button id="searchButton" onclick="filterTable()">Search</button>
+        </div>
+        <table class="table table-bordered table-striped mt-3" id="userTable">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr onclick="showUserDetails('@user.UserId', '@user.UserRole', '@user.Approved')"
+                        style="cursor: pointer;">
+                        <td class="userId">@user.UserId</td>
+                        <td class="username">@user.Username</td>
+                        <td class="fullName">@(!string.IsNullOrEmpty(user.FullName) ? user.FullName : "Unnamed")</td>
+                        <td>@(user.UserRole == 1 ? "Admin" : user.UserRole == 2 ? "Instructor" : "Learner")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </main>
+
+    <!-- User Details Modal -->
+    <div class="modal fade user-details-modal" id="userDetailsModal" tabindex="-1"
+        aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userDetailsModalLabel">User Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex">
+                    <!-- User Info Section -->
+                    <div class="user-info">
+                        <p><strong>Full Name:</strong> <span id="modalFullName"></span></p>
+                        <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+                        <p><strong>Date of Birth:</strong> <span id="modalDateOfBirth"></span></p>
+                        <p><strong>Gender:</strong> <span id="modalGender"></span></p>
+                        <p><strong>Phone Number:</strong> <span id="modalPhoneNumber"></span></p>
+                        <p><strong>Address:</strong> <span id="modalAddress"></span></p>
+                        <p><strong>Account Created At:</strong> <span id="modalAccountCreatedAt"></span></p>
+
+                        <h6 id="completedCoursesTitle" style="display: none;">Completed Courses</h6>
+                        <ul id="completedCoursesList"></ul>
+
+                        <div id="learnerActions" class="button-row" style="margin-top: 15px;">
+                            <button id="banButton" class="btn btn-danger" onclick="toggleApproval(false)"
+                                style="display: none;">Ban</button>
+                            <button id="unbanButton" class="btn btn-success" onclick="toggleApproval(true)"
+                                style="display: none;">Unban</button>
+                            <button id="promoteButton" class="btn btn-warning" onclick="promoteLearner()">Promote to
+                                Instructor</button>
+                        </div>
+                        <input type="hidden" id="modalUserId" />
+                    </div>
+
+                    <!-- User Picture Section -->
+                    <div class="user-picture ms-3">
+                        <img id="userPicture" src="/uploads/User-img/default_user.png" alt="User Picture"
+                            style="width: 140px; height: 140px; border-radius: 8px;margin-left: 35px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Certificate Modal -->
+    <div class="modal fade" id="certificateModal" tabindex="-1" aria-labelledby="certificateModalLabel"
+        aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="certificateModalLabel">Certificate of Completion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="certi-detail d-flex justify-content-center align-items-center">
+                    <div class="certificate-content p-4 text-center rounded shadow-sm bg-white" id="certificateArea">
+                        <h4 class="certificate-header text-uppercase mb-2">BrainStormEra Academy</h4>
+                        <h2 class="certificate-title mb-3">Certificate of Completion</h2>
+                        <p class="certificate-body">This certificate is awarded to</p>
+                        <h3 class="certificate-username mb-1" id="certificateUserName"></h3>
+                        <p class="mb-2">
+                            has successfully completed the online course "<span id="certificateCourseName"></span>"
+                            specialization on <span id="certificateDate"></span>
+                        </p>
+                        <div class="certificate-logo my-4">
+                            <img src="~/lib/img/Login/BrainStormEra_logo.png" alt="Logo" class="img-fluid">
+                        </div>
+                        <p class="certificate-footer text-muted">Verified by BrainStormEra</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showUserDetails(userId, userRole, approved) {
+            fetch(`/api/users/${userId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate user details
+                    document.getElementById('modalFullName').innerText = data.fullName || 'Unnamed';
+                    document.getElementById('modalEmail').innerText = data.userEmail || 'N/A';
+                    document.getElementById('modalDateOfBirth').innerText = data.dateOfBirth || 'N/A';
+                    document.getElementById('modalGender').innerText = data.gender || 'N/A';
+                    document.getElementById('modalPhoneNumber').innerText = data.phoneNumber || 'N/A';
+                    document.getElementById('modalAddress').innerText = data.userAddress || 'N/A';
+                    document.getElementById('modalAccountCreatedAt').innerText = new Date(data.accountCreatedAt).toLocaleString();
+                    document.getElementById('modalUserId').value = userId;
+
+                    // Set user picture
+                    document.getElementById('userPicture').src = data.userPicture || '/uploads/User-img/default_user.png';
+
+                    // Show learner-specific actions if role is 'Learner'
+                    if (userRole === "3") {
+                        document.getElementById('learnerActions').style.display = 'flex';
+                        document.getElementById('completedCoursesTitle').style.display = 'block';
+                        loadCompletedCourses(userId);
+
+                        // Display ban/unban buttons based on approval status
+                        if (approved === "0") {
+                            document.getElementById('banButton').style.display = 'none';
+                            document.getElementById('unbanButton').style.display = 'block';
+                        } else {
+                            document.getElementById('banButton').style.display = 'block';
+                            document.getElementById('unbanButton').style.display = 'none';
+                        }
+                    } else {
+                        // Hide learner-specific actions for non-learners
+                        document.getElementById('learnerActions').style.display = 'none';
+                        document.getElementById('completedCoursesTitle').style.display = 'none';
+                        document.getElementById('completedCoursesList').innerHTML = '';
+                    }
+
+                    // Show the modal
+                    const userDetailsModal = new bootstrap.Modal(document.getElementById('userDetailsModal'), {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+                    userDetailsModal.show();
+                })
+                .catch(error => console.error('Error fetching user details:', error));
+        }
+        function loadCompletedCourses(userId) {
+            fetch(`/api/users/${userId}/completed-courses`)
+                .then(response => response.json())
+                .then(courses => {
+                    const courseList = document.getElementById('completedCoursesList');
+                    courseList.innerHTML = '';
+
+                    if (courses.length === 0) {
+                        // Display message if no completed courses
+                        courseList.innerHTML = '<li>No completed courses yet</li>';
+                    } else {
+                        courses.forEach(course => {
+                            const courseItem = document.createElement('li');
+                            courseItem.innerHTML = `
+                                    <strong>${course.courseName}</strong> - Completed on ${new Date(course.completedDate).toLocaleDateString()}
+                                    <a href="javascript:void(0);" onclick="viewCertificate('${userId}', '${course.courseId}')" style="color : white; ">View Certificate</a>
+                                `;
+                            courseList.appendChild(courseItem);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error loading completed courses:', error));
+        }
+
+
+        function viewCertificate(userId, courseId) {
+            const userDetailsModal = bootstrap.Modal.getInstance(document.getElementById('userDetailsModal'));
+            userDetailsModal.hide();
+
+            // Fetch certificate details from the server using userId and courseId
+            fetch(`/Certificate/CertificateDetails?userId=${userId}&courseId=${courseId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Populate modal fields with fetched data
+                    document.getElementById('certificateUserName').innerText = data.userName || 'N/A';
+                    document.getElementById('certificateCourseName').innerText = data.courseName || 'N/A';
+                    document.getElementById('certificateDate').innerText = new Date(data.completedDate).toLocaleDateString();
+
+                    // Show the certificate modal
+                    var certificateModal = new bootstrap.Modal(document.getElementById('certificateModal'), {
+                        backdrop: true,
+                        keyboard: true
+                    });
+                    certificateModal.show();
+                })
+                .catch(error => console.error('Error loading certificate:', error));
+        }
+
+
+        function toggleApproval(approve) {
+            const userId = document.getElementById('modalUserId').value;
+            const url = approve ? `/api/unban/${userId}` : `/api/ban/${userId}`;
+            const banButton = document.getElementById('banButton');
+            const unbanButton = document.getElementById('unbanButton');
+
+            fetch(url, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        alert(approve ? 'User unbanned successfully.' : 'User banned successfully.');
+
+                        // Toggle button visibility without page reload
+                        if (approve) {
+                            banButton.style.display = 'block';
+                            unbanButton.style.display = 'none';
+                        } else {
+                            banButton.style.display = 'none';
+                            unbanButton.style.display = 'block';
+                        }
+                    } else {
+                        alert('Failed to update user status.');
+                    }
+                })
+                .catch(error => console.error('Error updating user status:', error));
+        }
+
+        function promoteLearner() {
+            const userId = document.getElementById('modalUserId').value;
+            fetch(`/api/promote/${userId}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Learner promoted successfully.');
+                        location.reload();
+                    } else {
+                        response.text().then(text => alert(text));
+                    }
+                })
+                .catch(error => console.error('Error promoting learner:', error));
+        }
+
+        function filterTable() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#userTable tbody tr');
+
+            rows.forEach(row => {
+                const userId = row.querySelector('.userId').textContent.toLowerCase();
+                const username = row.querySelector('.username').textContent.toLowerCase();
+                const fullName = row.querySelector('.fullName').textContent.toLowerCase();
+
+                row.style.display = userId.includes(searchInput) || username.includes(searchInput) || fullName.includes(searchInput) ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+@await Html.PartialAsync("~/Views/Shared/Footer/_Footer.cshtml")
+
+</html>
