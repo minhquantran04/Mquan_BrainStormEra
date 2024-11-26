@@ -148,7 +148,7 @@ To set up the project and install necessary dependencies, follow these steps:
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/LTPPPP/BrainStormEra
+   git clone https://github.com/minhquantran04/Mquan_BrainStormEra
    ```
 
    ```bash
