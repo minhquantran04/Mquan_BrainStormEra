@@ -31,13 +31,15 @@ namespace BrainStormEra.Repo.Chapter
                     {
                         var chapter = new Models.Chapter
                         {
-                            ChapterId = reader["chapter_id"].ToString(),
-                            CourseId = reader["course_id"].ToString(),
-                            ChapterName = reader["chapter_name"].ToString(),
-                            ChapterDescription = reader["chapter_description"].ToString(),
-                            ChapterOrder = Convert.ToInt32(reader["chapter_order"]),
-                            ChapterStatus = reader["chapter_status"] as int?,
-                            ChapterCreatedAt = Convert.ToDateTime(reader["chapter_created_at"])
+                            ChapterId = reader["chapter_id"].ToString() ?? string.Empty, // Default to empty string if null
+                            CourseId = reader["course_id"] != DBNull.Value ? reader["course_id"].ToString() : null,
+                            ChapterName = reader["chapter_name"].ToString() ?? string.Empty, // Default to empty string if null
+                            ChapterDescription = reader["chapter_description"] != DBNull.Value ? reader["chapter_description"].ToString() : null,
+                            ChapterOrder = reader["chapter_order"] != DBNull.Value ? Convert.ToInt32(reader["chapter_order"]) : 0, // Default to 0
+                            ChapterStatus = reader["chapter_status"] != DBNull.Value ? Convert.ToInt32(reader["chapter_status"]) : 0, // Default to 0
+                            ChapterCreatedAt = reader["chapter_created_at"] != DBNull.Value
+                        ? Convert.ToDateTime(reader["chapter_created_at"])
+                        : DateTime.MinValue // Default to DateTime.MinValue or placeholder
                         };
                         chapters.Add(chapter);
                     }
@@ -74,7 +76,7 @@ namespace BrainStormEra.Repo.Chapter
                             ChapterDescription = reader["chapter_description"].ToString(),
                             ChapterOrder = Convert.ToInt32(reader["chapter_order"]),
                             ChapterStatus = reader["chapter_status"] as int?,
-                            ChapterCreatedAt = Convert.ToDateTime(reader["chapter_created_at"])
+                            ChapterCreatedAt = reader["chapter_created_at"] != DBNull.Value ? Convert.ToDateTime(reader["chapter_created_at"]) : DateTime.MinValue // Default value
                         };
                     }
                 }
@@ -137,16 +139,24 @@ namespace BrainStormEra.Repo.Chapter
                             CourseId = reader["course_id"].ToString(),
                             ChapterName = reader["chapter_name"].ToString(),
                             ChapterDescription = reader["chapter_description"].ToString(),
-                            ChapterOrder = Convert.ToInt32(reader["chapter_order"]),
-                            ChapterStatus = reader["chapter_status"] as int?,
-                            ChapterCreatedAt = Convert.ToDateTime(reader["chapter_created_at"])
+                            // Safely handle DBNull for ChapterOrder
+                            ChapterOrder = reader["chapter_order"] != DBNull.Value ? Convert.ToInt32(reader["chapter_order"]) : 0,
+                            // Safely handle DBNull for ChapterStatus
+                            ChapterStatus = reader["chapter_status"] != DBNull.Value ? Convert.ToInt32(reader["chapter_status"]) : 0,
+                            // Safely handle DBNull for ChapterCreatedAt
+                            ChapterCreatedAt = reader["chapter_created_at"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["chapter_created_at"])
+                                : DateTime.MinValue
                         };
+
                         chapters.Add(chapter);
                     }
                 }
             }
+
             return chapters;
         }
+
 
 
         public async Task<Models.Chapter> GetLastChapterInCourseAsync(string courseId)
@@ -169,15 +179,21 @@ namespace BrainStormEra.Repo.Chapter
                             CourseId = reader["course_id"].ToString(),
                             ChapterName = reader["chapter_name"].ToString(),
                             ChapterDescription = reader["chapter_description"].ToString(),
-                            ChapterOrder = Convert.ToInt32(reader["chapter_order"]),
-                            ChapterStatus = reader["chapter_status"] as int?,
-                            ChapterCreatedAt = Convert.ToDateTime(reader["chapter_created_at"])
+                            // Safely handle DBNull for ChapterOrder
+                            ChapterOrder = reader["chapter_order"] != DBNull.Value ? Convert.ToInt32(reader["chapter_order"]) : 0,
+                            // Safely handle DBNull for ChapterStatus
+                            ChapterStatus = reader["chapter_status"] != DBNull.Value ? Convert.ToInt32(reader["chapter_status"]) : 0,
+                            // Safely handle DBNull for ChapterCreatedAt
+                            ChapterCreatedAt = reader["chapter_created_at"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["chapter_created_at"])
+                                : DateTime.MinValue // Default to DateTime.MinValue
                         };
                     }
                 }
             }
             return chapter;
         }
+
 
 
         public async Task<string> GenerateNewChapterIdAsync()
